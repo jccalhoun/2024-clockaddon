@@ -1,0 +1,15 @@
+{
+  "name": "Alarms API Demo",
+  "version": "1.0",
+  "manifest_version": 3,
+    "icons": {
+        //"16": "logo/logo-16.png",
+       // "48": "logo/logo-48.png",
+       // "128": "logo/logo-128.png"
+    },
+  "background": {
+    "service_worker": "bg-wrapper.js"
+  },
+  "permissions": ["alarms"],
+  "action": {}
+}
