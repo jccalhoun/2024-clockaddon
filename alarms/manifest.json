@@ -11,5 +11,6 @@
     "service_worker": "bg-wrapper.js"
   },
   "permissions": ["alarms"],
+    
   "action": {}
 }

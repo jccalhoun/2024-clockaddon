@@ -62,7 +62,9 @@ function updateClock() {
     });
     setInterval(updateClock, 1000);
 };
+updateClock();
 chrome.alarms.create("myAlarm", {
+    delayInMinutes: 0.5,
     periodInMinutes: 0.5
 });
 chrome.alarms.onAlarm.addListener((alarm) => {
