@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "new clock hours",
   "description": "shows the hours",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "background": {
     "page": "background.html"
   },
