@@ -1,8 +1,8 @@
-const ALARM_NAME = "update-clock-hour";
+const ALARM_NAME = "update-clock-minute";
 
 // Listen for messages from the options page to trigger an immediate update
 browser.runtime.onMessage.addListener((message) => {
-    if (message.colorChanged || message.displayChanged) {
+    if (message.colorChanged) {
         console.log("Settings changed, forcing immediate update.");
         updateClock();
     }
@@ -15,9 +15,7 @@ async function updateClock() {
         const [settings, theme] = await Promise.all([
             browser.storage.sync.get({
                 useCustomColor: false,
-                customColor: "#ffffff",
-                use24HourFormat: false,
-                showLeadingZero: false
+                customColor: "#ffffff"
             }),
             browser.theme.getCurrent().catch(() => ({})) // Add catch for safety
         ]);
@@ -32,18 +30,10 @@ async function updateClock() {
             colorToUse = "white"; // Fallback default
         }
         
-        // 3. Format the text to draw based on settings
+        // 3. Format the text to draw
         const date = new Date();
-        let hours = date.getHours();
-
-        if (!settings.use24HourFormat) {
-            hours = hours % 12 || 12; // 0 o'clock becomes 12
-        }
-        
-        let textToDraw = hours.toString();
-        if (settings.showLeadingZero && hours < 10) {
-            textToDraw = '0' + hours;
-        }
+        const minutes = date.getMinutes();
+        const textToDraw = String(minutes).padStart(2, '0');
 
         // 4. Create a canvas and draw the icon
         const canvas = document.createElement("canvas");
@@ -59,7 +49,7 @@ async function updateClock() {
 
         for (let currentSize = canvas.height; currentSize >= 1; currentSize--) {
             context.font = `bold ${currentSize}px Arial`;
-            let metrics = context.measureText(textToDraw + ":");
+            let metrics = context.measureText(textToDraw);
             if (metrics.width <= canvas.width - 2 && currentSize <= canvas.height - 2) {
                 bestFontSize = currentSize;
                 break;
@@ -68,12 +58,12 @@ async function updateClock() {
         
         context.fillStyle = colorToUse;
         context.font = `bold ${bestFontSize}px Arial`;
-        context.fillText(textToDraw + ":", canvas.width / 2, canvas.height / 2);
+        context.fillText(textToDraw, canvas.width / 2, canvas.height / 2);
 
         // 5. Update the browser action icon and title
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
         browser.action.setIcon({ imageData });
-        browser.action.setTitle({ title: date.toLocaleTimeString([], { hour12: !settings.use24HourFormat }) });
+        browser.action.setTitle({ title: date.toLocaleTimeString() });
 
     } catch (error) {
         console.error("Error updating clock:", error);
@@ -98,7 +88,7 @@ browser.alarms.onAlarm.addListener((alarm) => {
 
 // Initial setup when the extension is installed or the browser starts
 function initializeExtension() {
-    console.log("Clock Hours Initializing...");
+    console.log("Clock Minutes Initializing...");
     updateClock();
     scheduleNextUpdate();
 }

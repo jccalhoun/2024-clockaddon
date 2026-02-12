@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "new clock hours",
-  "description": "shows the hours",
+  "name": "Clock Minutes",
+  "description": "Shows the minutes with options shared with Clock Hours",
   "version": "0.3.0",
   "background": {
     "page": "background.html"
@@ -12,7 +12,7 @@
       "32": "icon32.png"
     },
     "default_popup": "popup.html",
-    "default_title": "clock hours"
+    "default_title": "Clock Minutes"
   },
   "options_ui": {
     "page": "options.html",
@@ -24,11 +24,11 @@
     "alarms"
   ],
   "optional_permissions": [
-    "*://jccalhoun-minutes-extension-id@gmail.com/*"
+    "*://jccalhoun@gmail.com/*"
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "jccalhoun@gmail.com"
+      "id": "jccalhoun-minutes-extension-id@gmail.com"
     }
   }
 }
