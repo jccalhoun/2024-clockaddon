@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Clock Minutes",
   "description": "Shows the minutes with options shared with Clock Hours",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "background": {
     "page": "background.html"
   },
