@@ -207,19 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateColorUI(hex, true);
     }
 
-    async function handleDisplayChange(event, settingKey) {
-        await saveDisplayPreferences({
-            [settingKey]: event.target.checked
-        });
-
-        // Notify the background script that display settings have changed
-        browser.runtime.sendMessage({
-            displayChanged: true
-        });
-
-        showStatusMessage("Display setting updated!");
-    }
-
     // --- Initialization ---
 
     function setupEventListeners() {
@@ -253,10 +240,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         window.addEventListener("touchmove", e => isDragging && handleSpectrumInteraction(e));
         window.addEventListener("touchend", () => isDragging = false);
-        if (elements.timeFormatToggle)
-            elements.timeFormatToggle.addEventListener("change", e => handleDisplayChange(e, 'use24HourFormat'));
-        if (elements.leadingZeroToggle)
-            elements.leadingZeroToggle.addEventListener("change", e => handleDisplayChange(e, 'showLeadingZero'));
     }
 
     async function init() {
@@ -264,10 +247,6 @@ document.addEventListener("DOMContentLoaded", () => {
         updateColorUI(settings.customColor);
         renderRecentColors(settings.recentColors);
         renderPresetButtons();
-        if (elements.timeFormatToggle)
-            elements.timeFormatToggle.checked = settings.use24HourFormat;
-        if (elements.leadingZeroToggle)
-            elements.leadingZeroToggle.checked = settings.showLeadingZero;
         setupEventListeners();
     }
 
