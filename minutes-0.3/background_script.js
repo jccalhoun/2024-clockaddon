@@ -7,7 +7,7 @@ const context = canvas.getContext("2d");
 
 // Listen for messages from the options page to trigger an immediate update
 browser.runtime.onMessage.addListener((message) => {
-    if (message.colorChanged) {
+    if (message.colorChanged || message.action === "settingsUpdated") {
         console.log("Settings changed, forcing immediate update.");
         updateClock();
     }
