@@ -6,6 +6,14 @@ const SharedSettings = {
   
   // Initialize by adding listeners for external messages
   init: function() {
+    const currentExtensionId = browser.runtime.id;
+    if (
+      currentExtensionId !== this.HOURS_EXTENSION_ID &&
+      currentExtensionId !== this.MINUTES_EXTENSION_ID
+    ) {
+      console.warn("SharedSettings: Current Extension ID does not match any known ID. Sync will fail.");
+    }
+
     // Listen for messages from companion extension
     browser.runtime.onMessageExternal.addListener(this.handleExternalMessage);
     console.log("SharedSettings initialized - listening for external messages");
@@ -41,14 +49,6 @@ const SharedSettings = {
     browser.storage.sync.set(settings).then(() => {
       console.log("Settings synchronized successfully");
       
-      // --- FIX: Directly call updateClock() to force an immediate refresh ---
-      if (typeof updateClock === 'function') {
-        console.log("Triggering immediate clock update after sync.");
-        updateClock();
-      } else {
-        console.error("updateClock function not found. Cannot trigger immediate update.");
-      }
-
     }).catch(error => {
       console.error("Error applying settings:", error);
     });

@@ -1,5 +1,10 @@
 const ALARM_NAME = "update-clock-minute";
 
+const canvas = document.createElement("canvas");
+canvas.width = 32;
+canvas.height = 32;
+const context = canvas.getContext("2d");
+
 // Listen for messages from the options page to trigger an immediate update
 browser.runtime.onMessage.addListener((message) => {
     if (message.colorChanged) {
@@ -35,11 +40,7 @@ async function updateClock() {
         const minutes = date.getMinutes();
         const textToDraw = String(minutes).padStart(2, '0');
 
-        // 4. Create a canvas and draw the icon
-        const canvas = document.createElement("canvas");
-        canvas.width = 32;
-        canvas.height = 32;
-        const context = canvas.getContext("2d");
+        // 4. Draw the icon
         context.clearRect(0, 0, canvas.width, canvas.height);
 
         // Dynamically find the best font size
@@ -73,10 +74,10 @@ async function updateClock() {
 // --- Alarms and Initialization ---
 
 function scheduleNextUpdate() {
-    const now = new Date();
-    // Schedule alarm for the start of the next minute
-    const delayInMinutes = (60 - now.getSeconds()) / 60;
-    browser.alarms.create(ALARM_NAME, { delayInMinutes });
+    const nextMinute = new Date();
+    nextMinute.setSeconds(0, 0);
+    nextMinute.setMinutes(nextMinute.getMinutes() + 1);
+    browser.alarms.create(ALARM_NAME, { when: nextMinute.getTime() });
 }
 
 browser.alarms.onAlarm.addListener((alarm) => {

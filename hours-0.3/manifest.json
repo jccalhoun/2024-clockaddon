@@ -23,9 +23,6 @@
     "theme",
     "alarms"
   ],
-  "optional_permissions": [
-    "*://jccalhoun-minutes-extension-id@gmail.com/*"
-  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "jccalhoun@gmail.com"
