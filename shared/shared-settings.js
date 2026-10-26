@@ -5,7 +5,7 @@
 const SharedSettings = {
   // IDs of the companion extensions (must match browser_specific_settings.gecko.id
   // in each manifest.json)
-  HOURS_EXTENSION_ID: "jccalhoun@gmail.com",
+  HOURS_EXTENSION_ID: "clock-hours@jccalhoun",
   MINUTES_EXTENSION_ID: "jccalhoun-minutes-extension-id@gmail.com",
 
   // Settings that are copied to a newly installed companion

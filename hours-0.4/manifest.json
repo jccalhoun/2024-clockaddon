@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "new clock hours",
-  "description": "shows the hours",
+  "name": "Clock Hours",
+  "description": "Shows the hours with options shared with Clock Minutes",
   "version": "0.4.1",
   "icons": {
     "48": "icon48.png",
@@ -16,7 +16,7 @@
       "32": "icon32.png"
     },
     "default_popup": "popup.html",
-    "default_title": "clock hours",
+    "default_title": "Clock Hours",
     "default_area": "navbar"
   },
   "options_ui": {
@@ -30,7 +30,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "jccalhoun@gmail.com",
+      "id": "clock-hours@jccalhoun",
       "strict_min_version": "140.0",
       "data_collection_permissions": {
         "required": [

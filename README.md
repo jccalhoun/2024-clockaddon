@@ -74,7 +74,7 @@ The IDs are fixed in each `manifest.json` (`browser_specific_settings.gecko.id`)
 
 | Add-on | Extension ID |
 |---|---|
-| Clock Hours | `jccalhoun@gmail.com` |
+| Clock Hours | `clock-hours@jccalhoun` |
 | Clock Minutes | `jccalhoun-minutes-extension-id@gmail.com` |
 
 **If you fork this and change either ID, change it in all three places** (both manifests and `shared/shared-settings.js`, then run `./build.sh`), or syncing will silently stop. The add-on logs a console warning if its own ID doesn't match either known ID.
