@@ -1,15 +1,10 @@
 const ALARM_NAME = "update-clock-minute";
 
-// The widest text this icon ever draws. Fitting the font to this (rather than to the
-// current minute) keeps the digits the same size every minute.
-const SIZING_TEXT = "00";
 
 const canvas = document.createElement("canvas");
 canvas.width = 32;
 canvas.height = 32;
 const context = canvas.getContext("2d");
-
-let cachedFontSize = null;
 
 // Listen for messages from the companion add-on (Clock Hours)
 SharedSettings.init();
@@ -47,23 +42,6 @@ function pickColor(settings, theme) {
     return window.matchMedia("(prefers-color-scheme: dark)").matches ? "#fbfbfe" : "#15141a";
 }
 
-/**
- * Finds the largest bold Arial size at which SIZING_TEXT fits the icon with a 1px margin.
- */
-function getFontSize() {
-    if (cachedFontSize) return cachedFontSize;
-    let bestFontSize = 1;
-    for (let currentSize = canvas.height - 2; currentSize >= 1; currentSize--) {
-        context.font = `bold ${currentSize}px Arial`;
-        if (context.measureText(SIZING_TEXT).width <= canvas.width - 2) {
-            bestFontSize = currentSize;
-            break;
-        }
-    }
-    cachedFontSize = bestFontSize;
-    return bestFontSize;
-}
-
 // Update the clock icon. Fetches settings every time so it never draws stale values.
 async function updateClock() {
     try {
@@ -85,14 +63,10 @@ async function updateClock() {
         const date = new Date();
         const textToDraw = String(date.getMinutes()).padStart(2, "0");
 
-        // 4. Draw the icon
-        const fontSize = getFontSize();
+        // 4. Draw the icon (same digit size in both add-ons; see clock-layout.js)
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.textAlign = "center";
-        context.textBaseline = "middle";
         context.fillStyle = colorToUse;
-        context.font = `bold ${fontSize}px Arial`;
-        context.fillText(textToDraw, canvas.width / 2, canvas.height / 2);
+        ClockLayout.drawMinutes(context, canvas.width, canvas.height, textToDraw);
 
         // 5. Update the browser action icon and title
         const imageData = context.getImageData(0, 0, canvas.width, canvas.height);

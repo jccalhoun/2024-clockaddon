@@ -2,7 +2,8 @@
 # Copies the shared files into both add-on folders, then packages each add-on
 # into dist/<name>-<version>.zip, ready to load or submit for signing.
 #
-# Edit shared-settings.js, color-utils.js and styles.css in shared/ only;
+# Edit the files in shared/ only (shared-settings.js, color-utils.js,
+# styles.css, clock-layout.js);
 # the copies in hours-0.4/ and minutes-0.4/ are overwritten by this script.
 #
 # Works with any one of: zip, 7z, bsdtar (built into Windows 10+ and macOS),
@@ -10,7 +11,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SHARED_FILES=(shared-settings.js color-utils.js styles.css)
+SHARED_FILES=(shared-settings.js color-utils.js styles.css clock-layout.js)
 
 # --- Pick a zip tool --------------------------------------------------------
 PYTHON=""

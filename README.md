@@ -87,10 +87,11 @@ Because settings are stored with `storage.sync`, they also follow you to other c
 shared/                    Source of truth for files used by both add-ons
 ├── shared-settings.js     Sends/receives settings to and from the companion add-on
 ├── color-utils.js         Hex/RGB/HSV conversion, validation and normalization
+├── clock-layout.js        Font size and digit placement shared by both icons
 └── styles.css             Styles for the popup and options page
 hours-0.4/, minutes-0.4/   One folder per add-on, same layout:
 ├── manifest.json          Extension manifest (MV3, Firefox)
-├── background.html        Background page; loads shared-settings.js and background_script.js
+├── background.html        Background page; loads shared-settings.js, clock-layout.js and background_script.js
 ├── background_script.js   Draws the number on the icon and schedules minute updates
 ├── popup.html             Toolbar popup
 ├── options.html           Full options page (adds preset colors)
@@ -107,7 +108,7 @@ Edit the shared files in `shared/` only. The copies inside each add-on folder ar
 
 ### Rendering details
 
-`background_script.js` draws the text on a 32×32 canvas in bold Arial and sets it with `action.setIcon({ imageData })`. The font size is fit once to the widest possible text (`00:` for hours, `00` for minutes), so the digits stay the same size as the time changes. After each update it schedules a one-shot alarm for the start of the next minute. Each time the background page loads it also checks that the alarm exists, so the clock restarts after the add-on is disabled and re-enabled.
+`background_script.js` draws the text on a 32×32 canvas in bold Arial and sets it with `action.setIcon({ imageData })`. The layout lives in `shared/clock-layout.js`, so both add-ons draw their digits at the same size: the largest size at which any two-digit hour plus the colon fits. Clock Hours puts the colon at its right edge, next to the minutes, with the hour just before it. Clock Minutes centers its two digits. Glyph edges are measured by scanning the drawn pixels, so spacing stays tight whatever the font metrics. After each update it schedules a one-shot alarm for the start of the next minute. Each time the background page loads it also checks that the alarm exists, so the clock restarts after the add-on is disabled and re-enabled.
 
 ## Permissions
 
