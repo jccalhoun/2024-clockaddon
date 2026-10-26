@@ -18,10 +18,13 @@ const ClockLayout = {
     BUILTIN_LABEL: "Bebas Neue (built-in)",
     BUILTIN_URL: "fonts/BebasNeue-Clock.woff2",
 
+    MIN_SIZE: 8,    // range for a user-chosen font size, in pixels
+    MAX_SIZE: 64,
     MARGIN: 0,      // empty pixels kept at each edge (toolbar buttons have their own padding)
     COLON_GAP: 2,   // pixels between the hour digits and the colon
 
     _fontKey: null,
+    _sizeOverride: 0,   // 0 = use the recommended size
     _family: null,
     _weight: "normal",
     _builtinReady: null,
@@ -141,8 +144,22 @@ const ClockLayout = {
                digits.bottom - digits.top <= height - 2 * this.MARGIN;
     },
 
-    // Largest font size that fits (binary search; width and height grow with size)
+    // Uses a fixed font size instead of the recommended one; 0 (or anything
+    // invalid) goes back to the recommended size.
+    setSize: function(size) {
+        const n = Math.round(Number(size));
+        this._sizeOverride = Number.isFinite(n) && n >= this.MIN_SIZE
+            ? Math.min(n, this.MAX_SIZE)
+            : 0;
+    },
+
+    // The size to draw at: the user's chosen size, or the recommended one
     fontSize: function(width, height) {
+        return this._sizeOverride || this.recommendedSize(width, height);
+    },
+
+    // Largest font size that fits (binary search; width and height grow with size)
+    recommendedSize: function(width, height) {
         const key = width + "x" + height;
         if (this._sizeCache[key]) return this._sizeCache[key];
         let lo = 4, hi = height * 2;

@@ -41,6 +41,12 @@
         <input type="text" id="font-custom" placeholder="Font name" hidden>
       </div>
       <div class="font-note" id="font-note"></div>
+      <div class="size-row">
+        <label for="font-size-slider">Size</label>
+        <input type="range" id="font-size-slider" min="8" max="64" step="1">
+        <span id="font-size-value"></span>
+        <button type="button" id="font-size-reset">Use recommended size</button>
+      </div>
       <div class="font-preview" id="font-preview" title="Preview of both icons">
         <canvas id="font-preview-hours" width="32" height="32"></canvas><canvas id="font-preview-minutes" width="32" height="32"></canvas>
       </div>

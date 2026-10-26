@@ -20,12 +20,13 @@ The add-ons work independently, but they are designed to be installed together.
 - **Live toolbar clock.** The icon updates on the minute using the `alarms` API, so it stays accurate without polling.
 - **Matches your theme.** By default the digits use your Firefox theme's toolbar text color. If the theme doesn't set one (as with the built-in System theme), they're dark or light to match your system's light/dark mode. The icon redraws as soon as you switch themes.
 - **Choice of font.** The digits use the bundled Bebas Neue by default, a tall condensed font that fills the small icon well. You can switch to any font installed on your computer from the options page, with a live preview of both icons.
+- **Adjustable size.** Each font is drawn at its recommended size, the largest that fits. A slider on the options page sets a different size, and **Use recommended size** goes back.
 - **Custom color.** Pick any color with a hue/brightness spectrum, RGB sliders, or a hex code (`#RRGGBB`).
 - **Preset colors.** One-click presets: Default (black), Dark Mode (white), Ocean Blue, Forest Green and Sunset Orange. *(Presets appear on the full options page.)*
 - **Recently used colors.** The last five custom colors are kept as swatches.
 - **12- or 24-hour time** (Clock Hours only).
 - **Optional leading zero** on the hour, e.g. `03:` instead of `3:` (Clock Hours only).
-- **Shared settings.** Changing the color or font in one add-on applies it to the other right away, so the two halves of the clock always match. A newly installed add-on also picks up the other's existing settings.
+- **Shared settings.** Changing the color, font or size in one add-on applies it to the other right away, so the two halves of the clock always match. A newly installed add-on also picks up the other's existing settings.
 
 ## Requirements
 
@@ -60,6 +61,7 @@ Both buttons are placed on the toolbar when first installed. If Clock Minutes en
 - **Full options page:** open it from the link in either popup, or from `about:addons` → the add-on → **Preferences**. It has the same controls plus the preset color buttons and the font picker.
 - **12h / 24h and leading zero** are set from Clock Hours.
 - **Font:** on either options page, under **Clock Font**, choose **Bebas Neue (built-in)**, one of the common fonts found on your computer, or **Other font…** to type the name of any installed font. Firefox doesn't let add-ons list installed fonts, so the list only covers well-known fonts that it detects. A font that isn't found is drawn in Bebas Neue instead, and the options page says so. System fonts are drawn bold.
+- **Size:** the slider under the font menu previews as you drag and saves when you let go. Above the recommended size, two-digit hours (10–12) can be cut off at the left edge; the preview shows `12:34` so you can check. **Use recommended size** (or dragging back to the recommended size) makes the size follow the font again if you change fonts later.
 
 ## How settings sync works
 
@@ -90,7 +92,7 @@ shared/                    Source of truth for files used by both add-ons
 ├── shared-settings.js     Sends/receives settings to and from the companion add-on
 ├── color-utils.js         Hex/RGB/HSV conversion, validation and normalization
 ├── clock-layout.js        Font choice and loading, font size, digit placement and color
-├── font-picker.js         Clock Font section of the options pages, with preview
+├── font-picker.js         Clock Font section of the options pages: font, size slider, preview
 ├── fonts/
 │   ├── BebasNeue-Clock.woff2  Bebas Neue trimmed to the digits and colon (3.5 KB)
 │   └── OFL-BebasNeue.txt      Its license

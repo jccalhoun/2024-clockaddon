@@ -143,3 +143,7 @@ h3 { margin-top: 0; }
 .font-note { color: #666; font-size: 13px; min-height: 1.2em; margin: 8px 0; }
 .font-preview { display: inline-flex; gap: 4px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
 .font-preview canvas { width: 64px; height: 64px; image-rendering: pixelated; }
+.size-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 4px 0 12px; }
+.size-row label { font-weight: bold; }
+.size-row input[type="range"] { flex: 1; min-width: 160px; }
+#font-size-value { min-width: 9em; font-size: 14px; color: #444; }

@@ -2,16 +2,17 @@
 // CLOCK FONT PICKER (options pages of both add-ons)
 // =================================================================
 // Lets the user choose the clock font: the built-in Bebas Neue, a common font
-// found on this computer, or any other installed font typed by name. The choice
-// is saved as "clockFont" and synced to the companion add-on. A preview shows
-// both icons as they will look in the toolbar.
+// found on this computer, or any other installed font typed by name, and
+// optionally a font size other than the recommended one. The choices are saved
+// as "clockFont" and "clockFontSize" (0 = recommended) and synced to the
+// companion add-on. A preview shows both icons as they will look in the toolbar.
 
 (function() {
     // Common fonts across Windows, macOS and Linux. Only the ones actually
     // installed are listed (Firefox has no API that lists installed fonts).
     const CANDIDATE_FONTS = [
         "Arial", "Arial Black", "Arial Narrow", "Avenir Next", "Avenir Next Condensed",
-        "Bahnschrift", "Bahnschrift Condensed", "Bahnschrift SemiCondensed", "Bebas Neue",
+        "Bahnschrift", "Bahnschrift Condensed", "Bahnschrift SemiCondensed",
         "Calibri", "Cambria", "Candara", "Cantarell", "Consolas", "Corbel", "Courier New",
         "DejaVu Sans", "DejaVu Sans Condensed", "DejaVu Sans Mono", "DIN Alternate", "DIN Condensed",
         "Fira Sans", "Fira Sans Condensed", "Franklin Gothic Medium", "Futura", "Georgia",
@@ -30,6 +31,13 @@
         const previewHours = document.getElementById("font-preview-hours");
         const previewMinutes = document.getElementById("font-preview-minutes");
         const previewBox = document.getElementById("font-preview");
+        const sizeSlider = document.getElementById("font-size-slider");
+        const sizeValue = document.getElementById("font-size-value");
+        const sizeReset = document.getElementById("font-size-reset");
+        sizeSlider.min = ClockLayout.MIN_SIZE;
+        sizeSlider.max = ClockLayout.MAX_SIZE;
+        let recommended = 0;   // recommended size for the current font
+        let dragging = false;
 
         const installed = CANDIDATE_FONTS.filter(name => ClockLayout.isFontInstalled(name));
 
@@ -49,10 +57,22 @@
         }
         addOption(select, OTHER, "Other font…");
 
+        // --- Size controls ---------------------------------------------------
+        // `chosen` is the saved size (0 = recommended); `shown` is the slider position
+        function showSize(chosen, shown) {
+            sizeValue.textContent = chosen
+                ? `${shown}px (recommended ${recommended}px)`
+                : `${shown}px (recommended)`;
+            sizeReset.disabled = !chosen;
+        }
+
         // --- Preview ---------------------------------------------------------
-        async function drawPreview() {
+        // previewSize: a size to show while the slider is being dragged
+        // (not yet saved); leave it out to use the saved size.
+        async function drawPreview(previewSize) {
             const [settings, theme] = await Promise.all([
-                browser.storage.sync.get({ useCustomColor: false, customColor: "#ffffff", clockFont: ClockLayout.BUILTIN }),
+                browser.storage.sync.get({ useCustomColor: false, customColor: "#ffffff",
+                    clockFont: ClockLayout.BUILTIN, clockFontSize: 0 }),
                 browser.theme.getCurrent().catch(() => ({}))
             ]);
             const c = (theme && theme.colors) || {};
@@ -63,6 +83,17 @@
             previewBox.style.backgroundColor = background;
 
             await ClockLayout.setFont(settings.clockFont);
+            recommended = ClockLayout.recommendedSize(previewHours.width, previewHours.height);
+            if (previewSize === undefined) {
+                ClockLayout.setSize(settings.clockFontSize);
+                const shown = ClockLayout.fontSize(previewHours.width, previewHours.height);
+                if (!dragging) sizeSlider.value = shown;
+                showSize(settings.clockFontSize ? shown : 0, shown);
+            } else {
+                ClockLayout.setSize(previewSize);
+                showSize(previewSize === recommended ? 0 : previewSize, previewSize);
+            }
+
             const color = ClockLayout.pickColor(settings, theme);
             [[previewHours, "12"], [previewMinutes, "34"]].forEach(([canvas, text]) => {
                 const ctx = canvas.getContext("2d");
@@ -120,11 +151,32 @@
             saveFont(name || ClockLayout.BUILTIN);
         });
 
+        // Saves the size; the recommended size is saved as 0 so it keeps
+        // following the font if the font changes later.
+        async function saveSize(size) {
+            const settings = { clockFontSize: size === recommended ? 0 : size };
+            await browser.storage.sync.set(settings);
+            browser.runtime.sendMessage({ fontChanged: true }).catch(() => {});
+            SharedSettings.syncSettings(settings);
+            drawPreview();
+        }
+
+        // Preview while dragging; save when released (storage.sync limits writes)
+        sizeSlider.addEventListener("input", () => {
+            dragging = true;
+            drawPreview(Number(sizeSlider.value));
+        });
+        sizeSlider.addEventListener("change", () => {
+            dragging = false;
+            saveSize(Number(sizeSlider.value));
+        });
+        sizeReset.addEventListener("click", () => saveSize(recommended));
+
         // Redraw when the color or font changes (here, in the popup, or from the companion)
         browser.storage.onChanged.addListener((changes, area) => {
             if (area !== "sync") return;
             if (changes.clockFont) showChoice(changes.clockFont.newValue || ClockLayout.BUILTIN);
-            drawPreview();
+            if (!dragging) drawPreview();
         });
 
         const { clockFont } = await browser.storage.sync.get({ clockFont: ClockLayout.BUILTIN });

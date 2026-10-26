@@ -33,6 +33,7 @@ async function updateClock() {
                 useCustomColor: false,
                 customColor: "#ffffff",
                 clockFont: ClockLayout.BUILTIN,
+                clockFontSize: 0,
                 use24HourFormat: false,
                 showLeadingZero: false
             }),
@@ -57,6 +58,7 @@ async function updateClock() {
 
         // 4. Draw the icon (same font and digit size in both add-ons; see clock-layout.js)
         await ClockLayout.setFont(settings.clockFont);
+        ClockLayout.setSize(settings.clockFontSize);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = colorToUse;
         ClockLayout.drawHours(context, canvas.width, canvas.height, textToDraw);
