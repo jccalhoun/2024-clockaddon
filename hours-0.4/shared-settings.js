@@ -1,10 +1,24 @@
-// Shared settings service to sync settings between clock extensions
+// Shared settings service to sync settings between the two clock extensions.
+// Each extension has its own storage, so settings are copied across by messaging.
+// The background script calls SharedSettings.init(); the popup and options page
+// only use syncSettings().
 const SharedSettings = {
-  // IDs of the companion extensions
+  // IDs of the companion extensions (must match browser_specific_settings.gecko.id
+  // in each manifest.json)
   HOURS_EXTENSION_ID: "jccalhoun@gmail.com",
   MINUTES_EXTENSION_ID: "jccalhoun-minutes-extension-id@gmail.com",
-  
-  // Initialize by adding listeners for external messages
+
+  // Settings that are copied to a newly installed companion
+  SYNCED_KEYS: ["useCustomColor", "customColor", "recentColors", "use24HourFormat", "showLeadingZero"],
+
+  // Returns the ID of the other extension
+  getCompanionId: function() {
+    return browser.runtime.id === this.HOURS_EXTENSION_ID
+      ? this.MINUTES_EXTENSION_ID
+      : this.HOURS_EXTENSION_ID;
+  },
+
+  // Start listening for messages from the companion extension (background page only)
   init: function() {
     const currentExtensionId = browser.runtime.id;
     if (
@@ -14,74 +28,48 @@ const SharedSettings = {
       console.warn("SharedSettings: Current Extension ID does not match any known ID. Sync will fail.");
     }
 
-    // Listen for messages from companion extension
-    browser.runtime.onMessageExternal.addListener(
-    this.handleExternalMessage.bind(this)
-	);
-    console.log("SharedSettings initialized - listening for external messages");
+    browser.runtime.onMessageExternal.addListener(this.handleExternalMessage.bind(this));
   },
-  
-  // Handle incoming message from the companion extension
+
+  // Handle an incoming message from the companion extension
   handleExternalMessage: function(message, sender) {
-    console.log("Received external message from:", sender.id, message);
-    
-    // Verify the message comes from a trusted extension
-    if (
-      sender.id === SharedSettings.HOURS_EXTENSION_ID || 
-      sender.id === SharedSettings.MINUTES_EXTENSION_ID
-    ) {
-      // Apply the received settings
-      if (message.action === "syncSettings") {
-        SharedSettings.applyReceivedSettings(message.settings);
-		
-		// Broadcast to all windows that settings have been updated
-        browser.runtime.sendMessage({
-          action: "settingsUpdated",
-          settings: message.settings
-        });
-      }
+    // Only accept messages from the two clock extensions
+    if (sender.id !== this.HOURS_EXTENSION_ID && sender.id !== this.MINUTES_EXTENSION_ID) {
+      return;
+    }
+
+    if (message.action === "syncSettings") {
+      // The background script's storage.onChanged listener redraws the icon
+      return browser.storage.sync.set(message.settings);
+    }
+
+    if (message.action === "requestSettings") {
+      // The companion was just installed and wants our current settings
+      return browser.storage.sync.get(this.SYNCED_KEYS);
     }
   },
-  
-  // Apply settings received from companion extension
-  applyReceivedSettings: function(settings) {
-    console.log("Applying received settings:", settings);
-    
-    // Store settings locally
-    browser.storage.sync.set(settings).then(() => {
-      console.log("Settings synchronized successfully");
-      
+
+  // Send changed settings to the companion extension
+  syncSettings: function(settings) {
+    return browser.runtime.sendMessage(this.getCompanionId(), {
+      action: "syncSettings",
+      settings: settings
     }).catch(error => {
-      console.error("Error applying settings:", error);
+      // Expected when the companion isn't installed
+      console.info("SharedSettings: companion not reachable:", error.message);
     });
   },
-  
-  // Sync settings to the companion extension
-  syncSettings: function(settings) {
-    console.log("Syncing settings to companion extension:", settings);
-    
-    try {
-		const currentExtensionId = browser.runtime.id;
-		const targetExtensionId = currentExtensionId === this.HOURS_EXTENSION_ID ? 
-                             this.MINUTES_EXTENSION_ID : this.HOURS_EXTENSION_ID;
-    
-		if (!browser.runtime.sendMessage) {
-		  console.error("SYNC: browser.runtime.sendMessage is not available");
-		  return;
+
+  // On first install, copy the companion's existing settings (if it's installed)
+  requestSettingsFromCompanion: function() {
+    return browser.runtime.sendMessage(this.getCompanionId(), { action: "requestSettings" })
+      .then(settings => {
+        if (settings && Object.keys(settings).length) {
+          return browser.storage.sync.set(settings);
         }
-    
-        console.log("SYNC: Sending message to:", targetExtensionId);
-        browser.runtime.sendMessage(targetExtensionId, {
-          action: "syncSettings",
-          settings: settings
-        }).catch(error => {
-          console.error("SYNC: Error sending message:", error.message);
-        });
-    } catch (error) {
-      console.error("SYNC: Error in syncSettings:", error);
-    }
+      })
+      .catch(() => {
+        // Companion not installed; keep the defaults
+      });
   }
 };
-
-// Initialize the shared settings service
-SharedSettings.init();

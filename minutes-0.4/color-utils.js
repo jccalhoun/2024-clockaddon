@@ -42,6 +42,16 @@ function hexToRgb(hex) {
 }
 
 /**
+ * Normalizes a HEX color to lowercase 6-digit form (e.g. "#FFF" -> "#ffffff").
+ * @param {string} hex - The HEX color string.
+ * @returns {string} The normalized HEX color string.
+ */
+function normalizeHex(hex) {
+    const { r, g, b } = hexToRgb(String(hex));
+    return rgbToHex(r, g, b);
+}
+
+/**
  * Converts HSV (Hue, Saturation, Value) color values to an RGB object.
  * @param {number} h - Hue (0-360).
  * @param {number} s - Saturation (0-1).

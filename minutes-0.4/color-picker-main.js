@@ -225,6 +225,24 @@ document.addEventListener("DOMContentLoaded", () => {
         [elements.redSlider, elements.greenSlider, elements.blueSlider].forEach(slider => {
             slider.addEventListener("input", handleRGBChange);
         });
+        // Typing a number in the R/G/B boxes moves the matching slider
+        [["redValue", "redSlider"], ["greenValue", "greenSlider"], ["blueValue", "blueSlider"]]
+            .forEach(([num, slider]) => {
+                elements[num].addEventListener("change", () => {
+                    const v = Math.max(0, Math.min(255, parseInt(elements[num].value, 10) || 0));
+                    elements[slider].value = v;
+                    handleRGBChange();
+                });
+            });
+        // Popup link: open (or focus) the options page and close the popup
+        const optionsLink = document.getElementById("open-options");
+        if (optionsLink) {
+            optionsLink.addEventListener("click", e => {
+                e.preventDefault();
+                browser.runtime.openOptionsPage();
+                window.close();
+            });
+        }
         elements.spectrumContainer.addEventListener("mousedown", e => {
             isDragging = true;
             handleSpectrumInteraction(e);

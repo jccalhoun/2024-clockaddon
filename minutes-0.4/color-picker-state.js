@@ -9,27 +9,23 @@
  */
 async function saveCustomColor(colorToSave) {
     try {
-        const data = await browser.storage.sync.get({ recentColors: [] });
-        let recentColors = data.recentColors || [];
+        // Normalize to lowercase #rrggbb so "#FFF", "#FFFFFF" and "#ffffff" are one color
+        const color = normalizeHex(colorToSave);
 
-        // Add the new color to the beginning of the recent colors list.
-        if (colorToSave && !recentColors.includes(colorToSave)) {
-            recentColors.unshift(colorToSave);
-        }
-        // Keep the list of recent colors to a maximum of 5.
-        if (recentColors.length > 5) {
-            recentColors = recentColors.slice(0, 5);
-        }
+        // Put this color first in the recent list, removing duplicates; keep 5.
+        const data = await browser.storage.sync.get({ recentColors: [] });
+        const recentColors = [...new Set([color, ...(data.recentColors || []).map(normalizeHex)])]
+            .slice(0, 5);
 
         const settings = {
             useCustomColor: true,
-            customColor: colorToSave,
+            customColor: color,
             recentColors: recentColors,
         };
 
         await browser.storage.sync.set(settings);
         
-        // --- FIX: Notify the local background script that the color has changed ---
+        // Notify the local background script so it redraws right away
         browser.runtime.sendMessage({ colorChanged: true });
         
         // Sync settings with the companion extension.
