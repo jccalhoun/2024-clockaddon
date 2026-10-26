@@ -9,7 +9,7 @@ const SharedSettings = {
   MINUTES_EXTENSION_ID: "clock-minutes@jccalhoun",
 
   // Settings that are copied to a newly installed companion
-  SYNCED_KEYS: ["useCustomColor", "customColor", "recentColors", "use24HourFormat", "showLeadingZero"],
+  SYNCED_KEYS: ["useCustomColor", "customColor", "recentColors", "use24HourFormat", "showLeadingZero", "clockFont"],
 
   // Returns the ID of the other extension
   getCompanionId: function() {

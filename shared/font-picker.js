@@ -1,0 +1,134 @@
+// =================================================================
+// CLOCK FONT PICKER (options pages of both add-ons)
+// =================================================================
+// Lets the user choose the clock font: the built-in Bebas Neue, a common font
+// found on this computer, or any other installed font typed by name. The choice
+// is saved as "clockFont" and synced to the companion add-on. A preview shows
+// both icons as they will look in the toolbar.
+
+(function() {
+    // Common fonts across Windows, macOS and Linux. Only the ones actually
+    // installed are listed (Firefox has no API that lists installed fonts).
+    const CANDIDATE_FONTS = [
+        "Arial", "Arial Black", "Arial Narrow", "Avenir Next", "Avenir Next Condensed",
+        "Bahnschrift", "Bahnschrift Condensed", "Bahnschrift SemiCondensed", "Bebas Neue",
+        "Calibri", "Cambria", "Candara", "Cantarell", "Consolas", "Corbel", "Courier New",
+        "DejaVu Sans", "DejaVu Sans Condensed", "DejaVu Sans Mono", "DIN Alternate", "DIN Condensed",
+        "Fira Sans", "Fira Sans Condensed", "Franklin Gothic Medium", "Futura", "Georgia",
+        "Gill Sans", "Helvetica", "Helvetica Neue", "Impact", "Liberation Sans",
+        "Liberation Sans Narrow", "Lucida Console", "Menlo", "Monaco", "Noto Sans", "Optima",
+        "Oswald", "Roboto", "Roboto Condensed", "Segoe UI", "Tahoma", "Trebuchet MS",
+        "Ubuntu", "Ubuntu Condensed", "Verdana"
+    ];
+    const OTHER = "__other__";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const select = document.getElementById("font-select");
+        if (!select) return;
+        const customInput = document.getElementById("font-custom");
+        const note = document.getElementById("font-note");
+        const previewHours = document.getElementById("font-preview-hours");
+        const previewMinutes = document.getElementById("font-preview-minutes");
+        const previewBox = document.getElementById("font-preview");
+
+        const installed = CANDIDATE_FONTS.filter(name => ClockLayout.isFontInstalled(name));
+
+        // --- Build the list --------------------------------------------------
+        function addOption(parent, value, label) {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = label;
+            parent.appendChild(option);
+        }
+        addOption(select, ClockLayout.BUILTIN, ClockLayout.BUILTIN_LABEL);
+        if (installed.length) {
+            const group = document.createElement("optgroup");
+            group.label = "Fonts on this computer";
+            installed.forEach(name => addOption(group, name, name));
+            select.appendChild(group);
+        }
+        addOption(select, OTHER, "Other font…");
+
+        // --- Preview ---------------------------------------------------------
+        async function drawPreview() {
+            const [settings, theme] = await Promise.all([
+                browser.storage.sync.get({ useCustomColor: false, customColor: "#ffffff", clockFont: ClockLayout.BUILTIN }),
+                browser.theme.getCurrent().catch(() => ({}))
+            ]);
+            const c = (theme && theme.colors) || {};
+            const toolbar = c.toolbar || c.frame;
+            const background = toolbar
+                ? (Array.isArray(toolbar) ? `rgb(${toolbar.join(",")})` : toolbar)
+                : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "#2b2a33" : "#f9f9fb");
+            previewBox.style.backgroundColor = background;
+
+            await ClockLayout.setFont(settings.clockFont);
+            const color = ClockLayout.pickColor(settings, theme);
+            [[previewHours, "12"], [previewMinutes, "34"]].forEach(([canvas, text]) => {
+                const ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = color;
+                if (canvas === previewHours) {
+                    ClockLayout.drawHours(ctx, canvas.width, canvas.height, text);
+                } else {
+                    ClockLayout.drawMinutes(ctx, canvas.width, canvas.height, text);
+                }
+            });
+        }
+
+        // --- Show the saved choice -------------------------------------------
+        function showChoice(clockFont) {
+            const name = clockFont === ClockLayout.BUILTIN ? "" : ClockLayout.cleanFontName(clockFont);
+            if (!name) {
+                select.value = ClockLayout.BUILTIN;
+                customInput.hidden = true;
+            } else if (installed.includes(name)) {
+                select.value = name;
+                customInput.hidden = true;
+            } else {
+                select.value = OTHER;
+                customInput.hidden = false;
+                customInput.value = name;
+            }
+            note.textContent = name && !ClockLayout.isFontInstalled(name)
+                ? `"${name}" wasn't found on this computer, so the built-in font is used.`
+                : "";
+        }
+
+        // --- Save ------------------------------------------------------------
+        async function saveFont(clockFont) {
+            const settings = { clockFont: clockFont };
+            await browser.storage.sync.set(settings);
+            browser.runtime.sendMessage({ fontChanged: true }).catch(() => {});
+            SharedSettings.syncSettings(settings);
+            showChoice(clockFont);
+            drawPreview();
+        }
+
+        select.addEventListener("change", () => {
+            if (select.value === OTHER) {
+                customInput.hidden = false;
+                customInput.focus();
+                note.textContent = "Type the name of a font installed on this computer, then press Enter.";
+            } else {
+                saveFont(select.value);
+            }
+        });
+
+        customInput.addEventListener("change", () => {
+            const name = ClockLayout.cleanFontName(customInput.value);
+            saveFont(name || ClockLayout.BUILTIN);
+        });
+
+        // Redraw when the color or font changes (here, in the popup, or from the companion)
+        browser.storage.onChanged.addListener((changes, area) => {
+            if (area !== "sync") return;
+            if (changes.clockFont) showChoice(changes.clockFont.newValue || ClockLayout.BUILTIN);
+            drawPreview();
+        });
+
+        const { clockFont } = await browser.storage.sync.get({ clockFont: ClockLayout.BUILTIN });
+        showChoice(clockFont);
+        drawPreview();
+    });
+})();

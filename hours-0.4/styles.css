@@ -136,3 +136,10 @@ h3 { margin-top: 0; }
 #preset-buttons, #recent-colors { display: flex; flex-wrap: wrap; }
 .options-page #preset-buttons, .options-page #recent-colors { gap: 10px; }
 .popup-page #recent-colors { gap: 5px; }
+/* Clock Font (options page) */
+.font-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.font-row select, .font-row input { padding: 6px 8px; font-size: 15px; }
+.font-row select { min-width: 220px; }
+.font-note { color: #666; font-size: 13px; min-height: 1.2em; margin: 8px 0; }
+.font-preview { display: inline-flex; gap: 4px; padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; }
+.font-preview canvas { width: 64px; height: 64px; image-rendering: pixelated; }

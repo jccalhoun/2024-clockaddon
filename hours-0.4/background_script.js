@@ -1,6 +1,5 @@
 const ALARM_NAME = "update-clock-hour";
 
-
 const canvas = document.createElement("canvas");
 canvas.width = 32;
 canvas.height = 32;
@@ -12,7 +11,7 @@ SharedSettings.init();
 // Listen for messages from the popup/options page to trigger an immediate update.
 // These also wake the background page if it has been suspended.
 browser.runtime.onMessage.addListener((message) => {
-    if (message.colorChanged || message.displayChanged) {
+    if (message.colorChanged || message.displayChanged || message.fontChanged) {
         updateClock();
     }
 });
@@ -25,23 +24,6 @@ browser.storage.onChanged.addListener((changes, area) => {
 // Redraw when the browser theme changes
 browser.theme.onUpdated.addListener(() => updateClock());
 
-/**
- * Picks the color for the digits: the custom color if one is set, otherwise the
- * theme's toolbar text color, otherwise a light/dark default matching the system.
- */
-function pickColor(settings, theme) {
-    if (settings.useCustomColor && settings.customColor) {
-        return settings.customColor;
-    }
-    const c = (theme && theme.colors) || {};
-    const themed = c.toolbar_text || c.bookmark_text || c.tab_background_text;
-    if (themed) {
-        // Theme colors can be given as [r, g, b] arrays
-        return Array.isArray(themed) ? `rgb(${themed.join(",")})` : themed;
-    }
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "#fbfbfe" : "#15141a";
-}
-
 // Update the clock icon. Fetches settings every time so it never draws stale values.
 async function updateClock() {
     try {
@@ -50,6 +32,7 @@ async function updateClock() {
             browser.storage.sync.get({
                 useCustomColor: false,
                 customColor: "#ffffff",
+                clockFont: ClockLayout.BUILTIN,
                 use24HourFormat: false,
                 showLeadingZero: false
             }),
@@ -57,7 +40,7 @@ async function updateClock() {
         ]);
 
         // 2. Determine the correct color to use
-        const colorToUse = pickColor(settings, theme);
+        const colorToUse = ClockLayout.pickColor(settings, theme);
 
         // 3. Format the text to draw based on settings
         const date = new Date();
@@ -72,7 +55,8 @@ async function updateClock() {
             textToDraw = textToDraw.padStart(2, "0");
         }
 
-        // 4. Draw the icon (same digit size in both add-ons; see clock-layout.js)
+        // 4. Draw the icon (same font and digit size in both add-ons; see clock-layout.js)
+        await ClockLayout.setFont(settings.clockFont);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.fillStyle = colorToUse;
         ClockLayout.drawHours(context, canvas.width, canvas.height, textToDraw);

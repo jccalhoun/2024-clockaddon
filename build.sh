@@ -3,7 +3,7 @@
 # into dist/<name>-<version>.zip, ready to load or submit for signing.
 #
 # Edit the files in shared/ only (shared-settings.js, color-utils.js,
-# styles.css, clock-layout.js);
+# styles.css, clock-layout.js, font-picker.js and fonts/);
 # the copies in hours-0.4/ and minutes-0.4/ are overwritten by this script.
 #
 # Works with any one of: zip, 7z, bsdtar (built into Windows 10+ and macOS),
@@ -11,7 +11,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-SHARED_FILES=(shared-settings.js color-utils.js styles.css clock-layout.js)
+SHARED_FILES=(shared-settings.js color-utils.js styles.css clock-layout.js font-picker.js)
 
 # --- Pick a zip tool --------------------------------------------------------
 PYTHON=""
@@ -61,18 +61,21 @@ for dir in hours-0.4 minutes-0.4; do
   for f in "${SHARED_FILES[@]}"; do
     cp "shared/$f" "$dir/$f"
   done
+  rm -rf "$dir/fonts"
+  cp -R shared/fonts "$dir/fonts"
 
   name="${dir%-*}"
   version=$(sed -n 's/^ *"version": *"\([^"]*\)".*/\1/p' "$dir/manifest.json" | tr -d '\r')
   out="dist/$name-$version.zip"
   tmp="dist/.$name-$version.tmp.zip"
 
-  # Every file in the add-on folder except zips and hidden files
+  # Every file in the add-on folder (and its fonts/ subfolder) except zips
+  # and hidden files, as paths relative to the folder
   files=()
-  for f in "$dir"/*; do
+  for f in "$dir"/* "$dir"/fonts/*; do
     [ -f "$f" ] || continue
     case "$f" in *.zip) continue ;; esac
-    files+=("$(basename "$f")")
+    files+=("${f#"$dir"/}")
   done
 
   rm -f "$tmp"

@@ -9,6 +9,18 @@
     <h1>Clock Minutes Options</h1>
     
     <div class="section">
+      <h2>Clock Font</h2>
+      <div class="font-row">
+        <select id="font-select"></select>
+        <input type="text" id="font-custom" placeholder="Font name" hidden>
+      </div>
+      <div class="font-note" id="font-note"></div>
+      <div class="font-preview" id="font-preview" title="Preview of both icons">
+        <canvas id="font-preview-hours" width="32" height="32"></canvas><canvas id="font-preview-minutes" width="32" height="32"></canvas>
+      </div>
+    </div>
+
+    <div class="section">
       <h2>Clock Color</h2>
       
       <div class="preset-themes-container">
@@ -62,7 +74,9 @@
     <div class="status" id="status"></div>
     <script src="shared-settings.js"></script>
     <script src="color-utils.js"></script>
+    <script src="clock-layout.js"></script>
     <script src="color-picker-state.js"></script>
     <script src="color-picker-main.js"></script>
+    <script src="font-picker.js"></script>
   </body>
 </html>
