@@ -15,7 +15,9 @@ const SharedSettings = {
     }
 
     // Listen for messages from companion extension
-    browser.runtime.onMessageExternal.addListener(this.handleExternalMessage);
+    browser.runtime.onMessageExternal.addListener(
+    this.handleExternalMessage.bind(this)
+	);
     console.log("SharedSettings initialized - listening for external messages");
   },
   

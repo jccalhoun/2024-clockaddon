@@ -24,9 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resetButton: document.getElementById("reset-button"),
         status: document.getElementById("status"),
         presetContainer: document.getElementById('preset-buttons'),
-        recentContainer: document.getElementById('recent-colors'),
-        timeFormatToggle: document.getElementById("time-format-toggle"),
-        leadingZeroToggle: document.getElementById("leading-zero-toggle"),
+        recentContainer: document.getElementById('recent-colors')
     };
 
     // --- UI Update Functions ---

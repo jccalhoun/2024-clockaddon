@@ -56,16 +56,6 @@ async function resetToDefault() {
 }
 
 /**
- * Saves display preferences like time format or leading zero (for the Hours extension).
- * @param {object} settingsToSave - An object containing the settings to save (e.g., { use24HourFormat: true }).
- */
-async function saveDisplayPreferences(settingsToSave) {
-    await browser.storage.sync.set(settingsToSave);
-    // Sync these display settings with the companion extension.
-    SharedSettings.syncSettings(settingsToSave);
-}
-
-/**
  * Loads all saved preferences from browser.storage.sync.
  * @returns {Promise<object>} A promise that resolves with the user's settings.
  */
@@ -73,9 +63,7 @@ function loadSavedPreferences() {
     const defaultSettings = {
         useCustomColor: false,
         customColor: "#ffffff",
-        recentColors: [],
-        use24HourFormat: false,
-        showLeadingZero: false,
+        recentColors: []
     };
     return browser.storage.sync.get(defaultSettings);
 }
